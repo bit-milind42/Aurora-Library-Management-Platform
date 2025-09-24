@@ -35,10 +35,7 @@
       {% endif %}
     </div>
 
-    <!-- DEBUG: Show authentication state -->
-    <div style="background: var(--accent-red); color: white; padding: 0.5rem; text-align: center; font-size: 0.875rem;">
-      🐛 DEBUG: User={{ user.username }}, Auth={{ user.is_authenticated }}, Session={{ request.session.session_key|slice:":8" }}...
-    </div>
+    {# Debug banner removed for production cleanliness #}
     
     <!-- Page Header -->
     <div class="container">
