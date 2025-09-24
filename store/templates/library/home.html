@@ -1,69 +1,234 @@
-{% extends 'base.html' %} {% block heading %} Books  {% endblock heading %}
-<!--  -->
+{% extends 'base.html' %}
+
+{% block title %}Book Library - LibraryMS{% endblock %}
+
+{% block heading %}
+  <i class="fas fa-books"></i> Digital Library
+{% endblock heading %}
+
 {% block content %}
 
-<h2>Book categories - {{ selected_category }}</h2>
-
-<ul class="filter-options">
-    <li><button  class="text-white hover:shadow-md text-xl rounded bg-red-500 px-4 py-1 mt-4 " ><a href="{% url 'filter_books' 'sci-fi' %}">Sci-Fi</a></button></li>
-    <li><button  class="text-white hover:shadow-md text-xl rounded bg-red-500 px-4 py-1 mt-4 " ><a href="{% url 'filter_books' 'fiction' %}">Fiction</a></button></li>
-    <li><button  class="text-white hover:shadow-md text-xl rounded bg-red-500 px-4 py-1 mt-4 " ><a href="{% url 'filter_books' 'comedy' %}">Comedy</a></button></li>
-</ul>
-
-<ul
-  class="mt-10 md:px-4 lg:px-12 xl:px-0 grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4"
->
-  {% for book in books %}
-  <li class="mb-12 md:mb-4 mx-auto text-center">
-
-    <div class="grid place-items-center p-2">
-      <img
-        src="{{book.image.url}}"
-        alt="{{book.name}}"
-        height="100"
-        width="100"
-        class="mb-4"
-      />
-      <h2 class="text-lg font-bold">{{book.name}}</h2>
+<!-- Search and Filter Section -->
+<div class="glass-card mb-6">
+  <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+    <div class="flex-1">
+      <h2 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fas fa-filter"></i>
+        Browse by Category
+        {% if selected_category %}
+          <span class="status status-success">{{ selected_category|title }}</span>
+        {% endif %}
+      </h2>
     </div>
-    {% if not user.is_superuser and not user.is_anonymous %}
-    <!--  -->
+    
+    <!-- Search Box -->
+    <div style="flex: 0 0 300px;">
+      <div style="position: relative;">
+        <input 
+          type="text" 
+          placeholder="Search books..." 
+          class="form-input" 
+          id="searchInput"
+          style="padding-left: 2.5rem;"
+        >
+        <i class="fas fa-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Category Filters -->
+  <div class="filter-container">
+    <a href="/" class="filter-btn {% if not selected_category %}active{% endif %}">
+      <i class="fas fa-th-large"></i> All Books
+    </a>
+    <a href="{% url 'filter_books' 'sci-fi' %}" class="filter-btn {% if selected_category == 'sci-fi' %}active{% endif %}">
+      <i class="fas fa-rocket"></i> Sci-Fi
+    </a>
+    <a href="{% url 'filter_books' 'fiction' %}" class="filter-btn {% if selected_category == 'fiction' %}active{% endif %}">
+      <i class="fas fa-feather"></i> Fiction
+    </a>
+    <a href="{% url 'filter_books' 'comedy' %}" class="filter-btn {% if selected_category == 'comedy' %}active{% endif %}">
+      <i class="fas fa-laugh"></i> Comedy
+    </a>
+    <a href="{% url 'filter_books' 'drama' %}" class="filter-btn {% if selected_category == 'drama' %}active{% endif %}">
+      <i class="fas fa-theater-masks"></i> Drama
+    </a>
+  </div>
+</div>
 
-    {% if book in issuedbooks %}
-    <p class="text-green-500 font-medium">issued</p>
-    {% elif book in requestedbooks %}
-    <p class="font-medium">issued requested</p>
-    {% else %}
-
-    <a
-      class="text-white hover:shadow-md rounded bg-blue-600 px-4 py-1"
-      href="/request-book-issue/{{book.id}}/"
-      >Request Issue</a
-    >
-    {% endif %} {% endif %} {% if user.is_superuser %}
-
-    {% endif %}
-  </li>
-
+<!-- Books Grid -->
+<div class="books-grid" id="booksGrid">
+  {% for book in books %}
+    <div class="card book-card fade-in" data-book-name="{{ book.name|lower }}" data-author="{{ book.author|lower }}">
+      <!-- Book Image -->
+      <div style="text-align: center; margin-bottom: 1rem;">
+        {% if book.image %}
+          <img 
+            src="{{ book.image.url }}" 
+            alt="{{ book.name }}"
+            class="book-image"
+            loading="lazy"
+          >
+        {% else %}
+          <div class="book-image" style="background: var(--tertiary-black); display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-book" style="font-size: 2rem; color: var(--accent-purple);"></i>
+          </div>
+        {% endif %}
+      </div>
+      
+      <!-- Book Info -->
+      <h3 class="book-title">{{ book.name }}</h3>
+      {% if book.author %}
+        <p class="book-author">by {{ book.author }}</p>
+      {% endif %}
+      
+      <!-- Book Category -->
+      <div style="margin-bottom: 1rem;">
+        <span class="status" style="background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); border: 1px solid var(--accent-purple);">
+          <i class="fas fa-tag"></i> {{ book.category.name }}
+        </span>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div style="margin-top: auto; padding-top: 1rem;">
+        {% if not user.is_superuser and not user.is_anonymous %}
+          {% if book in issuedbooks %}
+            <div class="status status-success" style="width: 100%; padding: 0.75rem;">
+              <i class="fas fa-check-circle"></i> Currently Issued
+            </div>
+          {% elif book in requestedbooks %}
+            <div class="status status-warning" style="width: 100%; padding: 0.75rem;">
+              <i class="fas fa-clock"></i> Issue Requested
+            </div>
+          {% else %}
+            <a 
+              href="/request-book-issue/{{ book.id }}/" 
+              class="btn btn-primary" 
+              style="width: 100%; justify-content: center;"
+            >
+              <i class="fas fa-plus-circle"></i> Request Issue
+            </a>
+          {% endif %}
+        {% elif user.is_superuser %}
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <a href="/admin/store/book/{{ book.id }}/change/" class="btn btn-outline" style="flex: 1;">
+              <i class="fas fa-edit"></i> Edit
+            </a>
+            <button class="btn btn-danger" style="flex: 1;" onclick="confirmDelete('{{ book.name }}', '/admin/store/book/{{ book.id }}/delete/')">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        {% else %}
+          <div class="text-center" style="padding: 1rem; color: var(--text-muted);">
+            <i class="fas fa-sign-in-alt"></i> 
+            <a href="/student/login" style="color: var(--accent-blue); text-decoration: none;">Login</a> to request books
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% empty %}
+    <div class="glass-card text-center" style="grid-column: 1 / -1; padding: 3rem;">
+      <i class="fas fa-book-open" style="font-size: 3rem; color: var(--accent-purple); margin-bottom: 1rem; opacity: 0.5;"></i>
+      <h3>No Books Found</h3>
+      <p style="color: var(--text-muted); margin-top: 0.5rem;">
+        {% if selected_category %}
+          No books available in the {{ selected_category }} category.
+        {% else %}
+          No books are currently available in the library.
+        {% endif %}
+      </p>
+      {% if user.is_superuser %}
+        <a href="/admin/store/book/add/" class="btn btn-primary" style="margin-top: 1rem;">
+          <i class="fas fa-plus"></i> Add Books
+        </a>
+      {% endif %}
+    </div>
   {% endfor %}
-</ul>
+</div>
 
+<!-- Loading Indicator -->
+<div id="loadingIndicator" style="text-align: center; margin-top: 2rem; display: none;">
+  <div class="loading"></div>
+  <p style="margin-top: 1rem; color: var(--text-muted);">Loading more books...</p>
+</div>
 
 {% endblock content %}
 
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('searchInput');
+  const booksGrid = document.getElementById('booksGrid');
+  const bookCards = document.querySelectorAll('.book-card');
+  
+  // Search functionality
+  searchInput.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase().trim();
+    
+    bookCards.forEach(card => {
+      const bookName = card.dataset.bookName;
+      const author = card.dataset.author;
+      const isVisible = bookName.includes(searchTerm) || author.includes(searchTerm);
+      
+      if (isVisible) {
+        card.style.display = 'block';
+        card.classList.add('fade-in');
+      } else {
+        card.style.display = 'none';
+      }
+    });
+    
+    // Show/hide no results message
+    const visibleCards = Array.from(bookCards).filter(card => card.style.display !== 'none');
+    let noResultsMsg = document.getElementById('noResultsMessage');
+    
+    if (visibleCards.length === 0 && searchTerm) {
+      if (!noResultsMsg) {
+        noResultsMsg = document.createElement('div');
+        noResultsMsg.id = 'noResultsMessage';
+        noResultsMsg.className = 'glass-card text-center';
+        noResultsMsg.style.gridColumn = '1 / -1';
+        noResultsMsg.style.padding = '3rem';
+        noResultsMsg.innerHTML = `
+          <i class="fas fa-search" style="font-size: 3rem; color: var(--accent-purple); margin-bottom: 1rem; opacity: 0.5;"></i>
+          <h3>No Results Found</h3>
+          <p style="color: var(--text-muted); margin-top: 0.5rem;">
+            No books match your search for "<strong>${searchTerm}</strong>".
+          </p>
+        `;
+        booksGrid.appendChild(noResultsMsg);
+      }
+    } else if (noResultsMsg) {
+      noResultsMsg.remove();
+    }
+  });
+  
+  // Smooth scroll to books section when filter is clicked
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      // Add loading state
+      this.style.opacity = '0.7';
+      this.innerHTML += ' <span class="loading" style="margin-left: 0.5rem;"></span>';
+    });
+  });
+});
 
-<script type="text/javascript">
-        const categorySelect = document.getElementById('categoryOptions');
-        const sortingSelect = document.getElementById('sortingOptions');
+// Confirm delete function for admin
+function confirmDelete(bookName, deleteUrl) {
+  if (confirm(`Are you sure you want to delete "${bookName}"? This action cannot be undone.`)) {
+    window.location.href = deleteUrl;
+  }
+}
 
-        categorySelect.addEventListener('change', updateProducts);
-        sortingSelect.addEventListener('change', updateProducts);
-
-        function updateProducts() {
-            const selectedCategory = categorySelect.value;
-            const selectedSorting = sortingSelect.value;
-
-            const url = `/products/?category=${selectedCategory}&sort=${selectedSorting}`;
-            window.location.href = url;
-        }
-    </script>
+// Add hover effects to book cards
+document.querySelectorAll('.book-card').forEach(card => {
+  card.addEventListener('mouseenter', function() {
+    this.style.transform = 'translateY(-8px) scale(1.02)';
+  });
+  
+  card.addEventListener('mouseleave', function() {
+    this.style.transform = 'translateY(-4px) scale(1)';
+  });
+});
+</script>
+{% endblock %}

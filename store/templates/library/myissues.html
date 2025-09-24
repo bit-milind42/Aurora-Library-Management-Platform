@@ -1,53 +1,261 @@
-{% extends 'base.html' %} {% block heading %} My Issues {% endblock heading %}
+{% extends 'base.html' %}
+
+{% block title %}My Book Issues - LibraryMS{% endblock %}
+
+{% block heading %}
+  <i class="fas fa-book-reader"></i> My Book Issues
+{% endblock heading %}
+
 {% block content %}
 
-<form
-  class="flex flex-col sm:flex-row items-center justify-start"
-  method="GET"
-  action="/my-issues/"
->
-  <button
-    class="text-gray-900 w-1/2 hover:shadow-md text-md rounded bg-yellow-400 px-4 py-2"
-    name="all"
-    type="submit"
-  >
-    All Issues
-  </button>
-  <button
-    class="text-white ml-0 mt-4 w-1/2 sm:mt-0 sm:ml-8 hover:shadow-md text-md rounded bg-green-600 px-4 py-2"
-    name="issued"
-    type="submit"
-  >
-    Issued Books
-  </button>
-  <button
-    class="text-white ml-0 w-1/2 mt-4 sm:mt-0 sm:ml-8 hover:shadow-md text-md rounded bg-red-500 px-4 py-2"
-    name="notissued"
-    type="submit"
-  >
-    Not Issued Books
-  </button>
-</form>
-<ul class="list-disc px-4 mt-8">
+<!-- Filter Controls -->
+<div class="glass-card mb-6">
+  <h2 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+    <i class="fas fa-filter"></i> Filter Issues
+  </h2>
+  
+  <form method="GET" action="/my-issues/" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
+    <button 
+      class="btn btn-outline {% if request.GET.all %}btn-primary{% endif %}"
+      name="all" 
+      type="submit"
+      style="flex: 1; min-width: 120px;"
+    >
+      <i class="fas fa-list"></i> All Issues
+    </button>
+    
+    <button 
+      class="btn btn-outline {% if request.GET.issued %}btn-success{% endif %}"
+      name="issued" 
+      type="submit"
+      style="flex: 1; min-width: 120px;"
+    >
+      <i class="fas fa-check-circle"></i> Issued Books
+    </button>
+    
+    <button 
+      class="btn btn-outline {% if request.GET.notissued %}btn-warning{% endif %}"
+      name="notissued" 
+      type="submit"
+      style="flex: 1; min-width: 120px;"
+    >
+      <i class="fas fa-clock"></i> Pending Requests
+    </button>
+  </form>
+</div>
+
+<!-- Issues List -->
+<div class="space-y-4">
   {% for issue in issues %}
-  <li class="">
-    <h3 class="text-xl font-semibold tracking-wide">
-      {{issue.book.name}} Issue Requested
-    </h3>
-    <h4 class="text-xs">{{issue.created_at}}</h4>
-    <div class="flex flex-row w-2/3 space-x-4 mt-4 mb-8">
-      {% if issue.issued %}
-      <h5 class="w-xs font-bold rounded bg-green-600 px-4 py-1">Issued</h5>
-      <h5 class="w-xs font-bold text-red-500 px-4 py-1">
-        Return Date : {{issue.return_date}}
-      </h5>
-      {% else %}
-      <h5 class="w-xs rounded font-bold text-pink-500 px-0 py-0">
-        Issue Request Pending
-      </h5>
+    <div class="glass-card issue-card fade-in">
+      <div class="flex flex-col md:flex-row justify-between items-start gap-4">
+        
+        <!-- Book Info Section -->
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-3">
+            {% if issue.book.image %}
+              <img 
+                src="{{ issue.book.image.url }}" 
+                alt="{{ issue.book.name }}"
+                style="width: 60px; height: 80px; object-fit: cover; border-radius: 8px; box-shadow: var(--shadow-sm);"
+              >
+            {% else %}
+              <div style="width: 60px; height: 80px; background: var(--tertiary-black); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-book" style="color: var(--accent-purple); font-size: 1.5rem;"></i>
+              </div>
+            {% endif %}
+            
+            <div>
+              <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                <i class="fas fa-book-open"></i> {{ issue.book.name }}
+              </h3>
+              
+              {% if issue.book.author %}
+                <p style="color: var(--text-muted); margin-bottom: 0.5rem;">
+                  <i class="fas fa-user"></i> by {{ issue.book.author }}
+                </p>
+              {% endif %}
+              
+              <p style="color: var(--text-muted); font-size: 0.875rem;">
+                <i class="fas fa-calendar-plus"></i> Requested: {{ issue.created_at|date:"M d, Y \a\t g:i A" }}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Status Section -->
+        <div style="display: flex; flex-direction: column; gap: 1rem; min-width: 200px;">
+          
+          <!-- Issue Status -->
+          {% if issue.issued %}
+            <div class="status status-success" style="text-align: center; padding: 0.75rem;">
+              <i class="fas fa-check-circle"></i> 
+              <strong>Issued</strong>
+            </div>
+            
+            <div style="text-align: center;">
+              <p style="color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 500;">
+                <i class="fas fa-calendar-check"></i> Issued Date
+              </p>
+              <p style="color: var(--accent-green); font-size: 0.875rem;">
+                {{ issue.issued_at|date:"M d, Y" }}
+              </p>
+            </div>
+            
+            {% if issue.return_date %}
+              <div style="text-align: center;">
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 500;">
+                  <i class="fas fa-calendar-times"></i> Return Date
+                </p>
+                <p style="color: var(--accent-red); font-size: 0.875rem; font-weight: 600;">
+                  {{ issue.return_date|date:"M d, Y" }}
+                </p>
+                
+                <!-- Days remaining/overdue -->
+                {% if issue.days_no %}
+                  <p style="font-size: 0.75rem; margin-top: 0.25rem; 
+                     {% if 'left' in issue.days_no %}color: var(--accent-green);
+                     {% else %}color: var(--accent-red);{% endif %}">
+                    {{ issue.days_no }}
+                  </p>
+                {% endif %}
+              </div>
+            {% endif %}
+            
+          {% else %}
+            <div class="status status-warning" style="text-align: center; padding: 0.75rem;">
+              <i class="fas fa-clock"></i> 
+              <strong>Pending</strong>
+            </div>
+            
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+              Waiting for admin approval
+            </p>
+          {% endif %}
+          
+          <!-- Return Status -->
+          {% if issue.issued and issue.returned %}
+            <div class="status" style="background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); border: 1px solid var(--accent-blue); text-align: center; padding: 0.75rem;">
+              <i class="fas fa-undo"></i> 
+              <strong>Returned</strong>
+            </div>
+          {% elif issue.issued and not issue.returned %}
+            <button 
+              class="btn btn-primary" 
+              onclick="confirmReturn('{{ issue.book.name }}', {{ issue.id }})"
+              style="width: 100%;"
+            >
+              <i class="fas fa-undo"></i> Mark as Returned
+            </button>
+          {% endif %}
+          
+        </div>
+      </div>
+      
+      <!-- Additional Actions -->
+      {% if not issue.issued and not issue.returned %}
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); text-align: right;">
+          <button 
+            class="btn btn-danger btn-outline"
+            onclick="confirmCancel('{{ issue.book.name }}', {{ issue.id }})"
+          >
+            <i class="fas fa-times"></i> Cancel Request
+          </button>
+        </div>
       {% endif %}
-      <!--  -->
-      {% if issue.issued and issue.returned %}
+      
+    </div>
+  {% empty %}
+    <div class="glass-card text-center" style="padding: 3rem;">
+      <i class="fas fa-book-reader" style="font-size: 4rem; color: var(--accent-purple); margin-bottom: 1rem; opacity: 0.5;"></i>
+      <h3>No Book Issues Found</h3>
+      <p style="color: var(--text-muted); margin: 1rem 0;">
+        {% if request.GET.issued %}
+          You don't have any issued books at the moment.
+        {% elif request.GET.notissued %}
+          You don't have any pending book requests.
+        {% else %}
+          You haven't requested any books yet.
+        {% endif %}
+      </p>
+      <a href="/" class="btn btn-primary">
+        <i class="fas fa-search"></i> Browse Books
+      </a>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Statistics Card -->
+{% if issues %}
+<div class="glass-card mt-6" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1));">
+  <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+    <i class="fas fa-chart-pie"></i> Issue Summary
+  </h3>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+    <div style="text-align: center; padding: 1rem;">
+      <div style="font-size: 2rem; font-weight: 700; color: var(--accent-blue); margin-bottom: 0.5rem;">
+        {{ issues|length }}
+      </div>
+      <div style="color: var(--text-secondary); font-size: 0.875rem;">Total Issues</div>
+    </div>
+    
+    <div style="text-align: center; padding: 1rem;">
+      <div style="font-size: 2rem; font-weight: 700; color: var(--accent-green); margin-bottom: 0.5rem;">
+        {% with issued_count=0 %}
+          {% for issue in issues %}
+            {% if issue.issued %}{% with issued_count=issued_count|add:1 %}{% endwith %}{% endif %}
+          {% endfor %}
+        {% endwith %}
+        <!-- You might need to calculate this in the view -->
+        ?
+      </div>
+      <div style="color: var(--text-secondary); font-size: 0.875rem;">Active Issues</div>
+    </div>
+    
+    <div style="text-align: center; padding: 1rem;">
+      <div style="font-size: 2rem; font-weight: 700; color: var(--accent-yellow); margin-bottom: 0.5rem;">
+        {% with pending_count=0 %}
+          {% for issue in issues %}
+            {% if not issue.issued %}{% with pending_count=pending_count|add:1 %}{% endwith %}{% endif %}
+          {% endfor %}
+        {% endwith %}
+        <!-- You might need to calculate this in the view -->
+        ?
+      </div>
+      <div style="color: var(--text-secondary); font-size: 0.875rem;">Pending</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock content %}
+
+{% block extra_scripts %}
+<script>
+function confirmReturn(bookName, issueId) {
+  if (confirm(`Are you sure you want to mark "${bookName}" as returned?`)) {
+    // You'll need to implement this endpoint
+    window.location.href = `/return-book/${issueId}/`;
+  }
+}
+
+function confirmCancel(bookName, issueId) {
+  if (confirm(`Are you sure you want to cancel your request for "${bookName}"?`)) {
+    // You'll need to implement this endpoint
+    window.location.href = `/cancel-issue/${issueId}/`;
+  }
+}
+
+// Add smooth animations
+document.addEventListener('DOMContentLoaded', function() {
+  const cards = document.querySelectorAll('.issue-card');
+  cards.forEach((card, index) => {
+    card.style.animationDelay = `${index * 0.1}s`;
+  });
+});
+</script>
+{% endblock %}
       <h5 class="w-xs rounded font-bold bg-green-600 px-4 py-1">Returned</h5>
       {% else %}
       <h5 class="w-xs font-bold px-4 py-1">{{issue.days_no}}</h5>

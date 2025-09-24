@@ -1,33 +1,254 @@
-{% extends 'base.html' %} {% block heading %} All Issues {% endblock heading %}
-{% block content %}
-<form
-  class="w-full flex flex-col sm:flex-row sm:items-center"
-  action="/all-issues/"
->
-  <label class="text-lg" for="studentID">Search Student :</label>
-  <input
-    class="w-full sm:w-1/3 px-2 py-1 bg-transparent border-white border-2 mt-4 sm:mt-0 sm:mx-5 rounded text-white placeholder-gray-700"
-    type="text"
-    name="studentID"
-    id="search"
-    placeholder="student id only"
-  />
-  <button
-    class="text-white hover:shadow-md rounded mt-4 sm:mt-0 bg-blue-500 px-4 py-1"
-  >
-    Search
-  </button>
-</form>
+{% extends 'base.html' %}
 
-<!--  -->
-<ul class="list-disc px-4 mt-8">
+{% block title %}All Book Issues - Admin Panel{% endblock %}
+
+{% block heading %}
+  <i class="fas fa-clipboard-list"></i> All Book Issues - Admin Dashboard
+{% endblock heading %}
+
+{% block content %}
+
+<!-- Search Section -->
+<div class="glass-card mb-6">
+  <h2 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+    <i class="fas fa-search"></i> Search Student Issues
+  </h2>
+  
+  <form action="/all-issues/" method="GET" style="display: flex; gap: 1rem; align-items: end; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 250px;">
+      <label for="studentID" class="form-label">
+        <i class="fas fa-id-card"></i> Student ID
+      </label>
+      <input
+        type="text"
+        name="studentID"
+        id="studentID"
+        class="form-input"
+        placeholder="Enter student ID to search"
+        value="{{ request.GET.studentID }}"
+      />
+    </div>
+    
+    <button type="submit" class="btn btn-primary">
+      <i class="fas fa-search"></i> Search
+    </button>
+    
+    {% if request.GET.studentID %}
+      <a href="/all-issues/" class="btn btn-outline">
+        <i class="fas fa-times"></i> Clear
+      </a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Issues List -->
+<div class="space-y-4">
   {% for issue in issues %}
-  <li>
-    <h3 class="text-xl tracking-wide">
-      <span class="font-bold">{{issue.book.name}}</span> Issue Requested by
-      <a
-        target="_blank"
-        href="/admin/student/student/{{issue.student.id}}/"
+    <div class="glass-card issue-card fade-in">
+      <div class="flex flex-col lg:flex-row justify-between items-start gap-4">
+        
+        <!-- Issue Info Section -->
+        <div class="flex-1">
+          <div class="flex items-start gap-3 mb-3">
+            {% if issue.book.image %}
+              <img 
+                src="{{ issue.book.image.url }}" 
+                alt="{{ issue.book.name }}"
+                style="width: 60px; height: 80px; object-fit: cover; border-radius: 8px; box-shadow: var(--shadow-sm);"
+              >
+            {% else %}
+              <div style="width: 60px; height: 80px; background: var(--tertiary-black); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-book" style="color: var(--accent-purple); font-size: 1.5rem;"></i>
+              </div>
+            {% endif %}
+            
+            <div style="flex: 1;">
+              <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                <i class="fas fa-book-open"></i> {{ issue.book.name }}
+              </h3>
+              
+              <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.5rem;">
+                <a 
+                  href="/admin/student/student/{{ issue.student.id }}/" 
+                  target="_blank"
+                  style="color: var(--accent-blue); text-decoration: none; display: flex; align-items: center; gap: 0.25rem; font-weight: 500;"
+                  class="hover:underline"
+                >
+                  <i class="fas fa-user-graduate"></i> {{ issue.student }}
+                </a>
+                
+                <span style="color: var(--text-muted); font-size: 0.875rem; display: flex; align-items: center; gap: 0.25rem;">
+                  <i class="fas fa-calendar-plus"></i> {{ issue.created_at|date:"M d, Y \a\t g:i A" }}
+                </span>
+              </div>
+              
+              {% if issue.book.author %}
+                <p style="color: var(--text-muted); margin-bottom: 0.5rem;">
+                  <i class="fas fa-user"></i> by {{ issue.book.author }}
+                </p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Status and Actions Section -->
+        <div style="display: flex; flex-direction: column; gap: 1rem; min-width: 250px;">
+          
+          <!-- Current Status -->
+          <div>
+            {% if issue.issued %}
+              <div class="status status-success" style="text-align: center; padding: 0.75rem; margin-bottom: 1rem;">
+                <i class="fas fa-check-circle"></i> 
+                <strong>Book Issued</strong>
+              </div>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.875rem;">
+                <div style="text-align: center;">
+                  <p style="color: var(--text-secondary); margin-bottom: 0.25rem; font-weight: 500;">
+                    <i class="fas fa-calendar-check"></i> Issued
+                  </p>
+                  <p style="color: var(--accent-green);">
+                    {{ issue.issued_at|date:"M d, Y" }}
+                  </p>
+                </div>
+                
+                {% if issue.return_date %}
+                  <div style="text-align: center;">
+                    <p style="color: var(--text-secondary); margin-bottom: 0.25rem; font-weight: 500;">
+                      <i class="fas fa-calendar-times"></i> Due Date
+                    </p>
+                    <p style="color: var(--accent-red); font-weight: 600;">
+                      {{ issue.return_date|date:"M d, Y" }}
+                    </p>
+                  </div>
+                {% endif %}
+              </div>
+              
+            {% else %}
+              <div class="status status-warning" style="text-align: center; padding: 0.75rem; margin-bottom: 1rem;">
+                <i class="fas fa-clock"></i> 
+                <strong>Pending Approval</strong>
+              </div>
+            {% endif %}
+            
+            <!-- Return Status -->
+            {% if issue.issued and issue.returned %}
+              <div class="status" style="background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); border: 1px solid var(--accent-blue); text-align: center; padding: 0.75rem; margin-top: 1rem;">
+                <i class="fas fa-undo"></i> 
+                <strong>Book Returned</strong>
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Admin Actions -->
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            {% if not issue.issued and not issue.returned %}
+              <!-- Approve Issue -->
+              <form method="POST" action="/approve-issue/{{ issue.id }}/" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success" style="width: 100%;">
+                  <i class="fas fa-check"></i> Approve Issue
+                </button>
+              </form>
+              
+              <!-- Reject Issue -->
+              <button 
+                class="btn btn-danger btn-outline" 
+                style="width: 100%;"
+                onclick="confirmReject('{{ issue.book.name }}', '{{ issue.student }}', {{ issue.id }})"
+              >
+                <i class="fas fa-times"></i> Reject Request
+              </button>
+              
+            {% elif issue.issued and not issue.returned %}
+              <!-- Mark as Returned -->
+              <form method="POST" action="/mark-returned/{{ issue.id }}/" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                  <i class="fas fa-undo"></i> Mark as Returned
+                </button>
+              </form>
+            {% endif %}
+            
+            <!-- Edit Issue (Admin) -->
+            <a 
+              href="/admin/store/issue/{{ issue.id }}/change/" 
+              target="_blank"
+              class="btn btn-outline" 
+              style="width: 100%; text-align: center;"
+            >
+              <i class="fas fa-edit"></i> Edit Details
+            </a>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="glass-card text-center" style="padding: 3rem;">
+      <i class="fas fa-clipboard-list" style="font-size: 4rem; color: var(--accent-purple); margin-bottom: 1rem; opacity: 0.5;"></i>
+      <h3>No Issues Found</h3>
+      <p style="color: var(--text-muted); margin: 1rem 0;">
+        {% if request.GET.studentID %}
+          No book issues found for student ID "{{ request.GET.studentID }}".
+        {% else %}
+          No book issue requests have been made yet.
+        {% endif %}
+      </p>
+      {% if not request.GET.studentID %}
+        <p style="color: var(--text-secondary); font-size: 0.875rem;">
+          Students can request books from the library homepage.
+        </p>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Summary Statistics -->
+{% if issues %}
+<div class="glass-card mt-6" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1));">
+  <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+    <i class="fas fa-chart-bar"></i> Issue Statistics
+  </h3>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+    <div style="text-align: center; padding: 1rem;">
+      <div style="font-size: 2rem; font-weight: 700; color: var(--accent-blue); margin-bottom: 0.5rem;">
+        {{ issues|length }}
+      </div>
+      <div style="color: var(--text-secondary); font-size: 0.875rem;">Total Issues</div>
+    </div>
+    
+    <!-- You can add more statistics here calculated in the view -->
+  </div>
+</div>
+{% endif %}
+
+{% endblock content %}
+
+{% block extra_scripts %}
+<script>
+function confirmReject(bookName, studentName, issueId) {
+  if (confirm(`Are you sure you want to reject ${studentName}'s request for "${bookName}"?`)) {
+    // You'll need to implement this endpoint
+    window.location.href = `/reject-issue/${issueId}/`;
+  }
+}
+
+// Add smooth animations
+document.addEventListener('DOMContentLoaded', function() {
+  const cards = document.querySelectorAll('.issue-card');
+  cards.forEach((card, index) => {
+    card.style.animationDelay = `${index * 0.1}s`;
+  });
+  
+  // Focus search input if no search term
+  if (!document.getElementById('studentID').value) {
+    document.getElementById('studentID').focus();
+  }
+});
+</script>
+{% endblock %}
         class="font-bold hover:underline"
       >
         {{issue.student.student_id.username}}_{{issue.student.first_name}}</a

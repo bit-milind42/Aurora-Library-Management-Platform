@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 
 
 # Create your models here.
@@ -14,7 +14,7 @@ class Student(models.Model):
     first_name = models.CharField(max_length=120)
     last_name = models.CharField(max_length=120)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    student_id = models.OneToOneField(User, on_delete=models.CASCADE)
+    student_id = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def __str__(self):
         last_4_digits = self.student_id.username[-4:]

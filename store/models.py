@@ -2,6 +2,9 @@ from django.db import models
 from student.models import Student
 import datetime
 from django.utils import timezone
+from rest_framework import serializers
+# from .models import CustomUser
+from django.contrib.auth.models import AbstractUser,Group, Permission
 
 
 class Category(models.Model):
@@ -13,7 +16,8 @@ class Category(models.Model):
 
 class Book(models.Model):
     name = models.CharField(max_length=350)
-    image = models.ImageField()
+    author = models.ForeignKey('Author', on_delete=models.PROTECT, null=True, blank=True)
+    image = models.ImageField(upload_to='books/', blank=True, null=True)
     category =  models.ForeignKey(Category, on_delete=models.CASCADE)
 
 
@@ -48,6 +52,19 @@ class Issue(models.Model):
         else:
             return ""
 
+    @property
+    def status(self):
+        if self.returned:
+            return 'returned'
+        if self.issued:
+            return 'issued'
+        return 'requested'
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['student', 'book'], condition=models.Q(returned=False), name='unique_active_issue')
+        ]
+
 
 class Fine(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -70,3 +87,42 @@ class Fine(models.Model):
 
     def __str__(self):
         return "{} fine->{}".format(self.issue, self.amount)
+
+
+# class CustomUser(AbstractUser):
+#     # Add custom user fields if needed
+#     pass
+class CustomUser(AbstractUser):
+    # Your custom fields and logic here
+
+    # Add related_name to groups and user_permissions
+    groups = models.ManyToManyField(
+        Group,
+        verbose_name=('groups'),
+        blank=True,
+        related_name='custom_user_set'  # You can use any name you prefer
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        verbose_name=('user permissions'),
+        blank=True,
+        related_name='custom_user_set_permissions'  # You can use any name you prefer
+    )
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'username', 'email', 'first_name', 'last_name')
+
+
+class Author(models.Model):
+    name = models.CharField(max_length=120, unique=True)
+    bio = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+
+
+

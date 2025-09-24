@@ -2,31 +2,20 @@ from django.contrib import admin
 from .models import Student, Department
 
 
-from django.contrib.auth.models import User, Group
-from django.contrib.auth.admin import UserAdmin
 
-admin.site.unregister(User)
-admin.site.unregister(Group)
+from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import UserAdmin
 
 
 class StudentInline(admin.TabularInline):
     model = Student
 
 
-@admin.register(User)
+
+CustomUser = get_user_model()
+@admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'student', 'last_login')
-    list_filter = ('is_superuser', 'is_active')
-    fieldsets = (
-        ('Standard info', {
-            'fields': ('username', 'password',)
-        }),
-        ('Important Date & Time ', {
-            'fields': ('last_login', 'date_joined',)
-        }),)
-    inlines = [
-        StudentInline
-    ]
+    inlines = [StudentInline]
 
 
 @admin.register(Student)

@@ -1,87 +1,404 @@
 {% extends 'base.html' %}
-{% block heading %} Signup {% endblock heading %}
+
+{% block title %}Register - LibraryMS{% endblock %}
+
+{% block heading %}
+  <i class="fas fa-user-plus"></i> Create Student Account
+{% endblock heading %}
 
 {% block content %}
 
-<form class="w-2xl sm:w-1/2 max-w-xs flex flex-col mx-auto -mt-8 sm:-mt-12" action="/student/signup/" method="POST">
-  {% csrf_token %}
-  <div class="w-1/2  max-w-xs flex flex-col sm:flex-row mt-4  sm:items-center"></div>
-    <label class="text-xl" for="firstname">Name</label>
-    <input
-      class="px-2 py-1 bg-transparent border-white border-2 h-lg mt-2 rounded "
-      name="firstname"
-
+<div class="form-container glass-card" style="max-width: 500px;">
+  <!-- Welcome Section -->
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-green)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+      <i class="fas fa-user-graduate" style="font-size: 2rem; color: white;"></i>
+    </div>
+    <h2 style="margin-bottom: 0.5rem;">Join Our Library!</h2>
+    <p style="color: var(--text-secondary);">Create your account to start borrowing books</p>
   </div>
 
-  <div class="w-1/2  max-w-xs flex flex-col sm:flex-row mt-4  sm:items-center"></div>
-  <label class="text-xl" for="studentID">StudentID</label>
+  <!-- Registration Form -->
+  <form action="{% url 'student-signup' %}" method="POST" id="signupForm" style="width: 100%;">
+    {% csrf_token %}
+    
+    <!-- Personal Information Section -->
+    <div style="margin-bottom: 2rem;">
+      <h3 style="color: var(--accent-purple); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fas fa-user"></i> Personal Information
+      </h3>
+      
+      <!-- First Name -->
+      <div class="form-group">
+        <label for="firstname" class="form-label">
+          <i class="fas fa-signature"></i> Full Name
+        </label>
+        <div style="position: relative;">
+          <input
+            type="text"
+            id="firstname"
+            name="firstname"
+            class="form-input"
+            placeholder="Enter your full name"
+            required
+            autocomplete="name"
+            style="padding-left: 2.5rem;"
+          />
+          <i class="fas fa-user" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+        </div>
+      </div>
 
-  <input
-    class="px-2 py-1 bg-transparent border-white border-2 h-lg mt-2 rounded "
-    name="studentID"
+      <!-- Email -->
+      <div class="form-group">
+        <label for="emailID" class="form-label">
+          <i class="fas fa-envelope"></i> Email Address
+        </label>
+        <div style="position: relative;">
+          <input
+            type="email"
+            id="emailID"
+            name="emailID"
+            class="form-input"
+            placeholder="Enter your email address"
+            required
+            autocomplete="email"
+            style="padding-left: 2.5rem;"
+          />
+          <i class="fas fa-envelope" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+        </div>
+        <p id="emailID-error" class="hidden" style="color: var(--accent-red); font-size: 0.875rem; margin-top: 0.25rem;">
+          <i class="fas fa-exclamation-triangle"></i> Email format is invalid
+        </p>
+      </div>
 
-  <p id="studentID-error" class="hidden text-red-400 py-1">ID either incomplete or exists</p>
-</div>
-</div>
+      <!-- Phone -->
+      <div class="form-group">
+        <label for="mobile" class="form-label">
+          <i class="fas fa-phone"></i> Phone Number
+        </label>
+        <div style="position: relative;">
+          <input
+            type="tel"
+            id="mobile"
+            name="mobile"
+            class="form-input"
+            placeholder="Enter your phone number"
+            required
+            autocomplete="tel"
+            style="padding-left: 2.5rem;"
+          />
+          <i class="fas fa-phone" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+        </div>
+      </div>
 
-<div class="w-1/2  max-w-xs flex flex-col sm:flex-row mt-4  sm:items-center"></div>
-  <label class="text-xl" for="emailID">E-mail</label>
+      <!-- Address -->
+      <div class="form-group">
+        <label for="address" class="form-label">
+          <i class="fas fa-map-marker-alt"></i> Address
+        </label>
+        <div style="position: relative;">
+          <textarea
+            id="address"
+            name="address"
+            class="form-input"
+            placeholder="Enter your address"
+            rows="3"
+            required
+            style="padding-left: 2.5rem; resize: vertical; min-height: 80px;"
+          ></textarea>
+          <i class="fas fa-map-marker-alt" style="position: absolute; left: 0.75rem; top: 1rem; color: var(--text-muted);"></i>
+        </div>
+      </div>
+    </div>
 
-  <input
-    class="px-2 py-1 bg-transparent border-white border-2 h-lg mt-2 rounded "
-    name="emailID"
-    type="text"
+    <!-- Academic Information Section -->
+    <div style="margin-bottom: 2rem;">
+      <h3 style="color: var(--accent-blue); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fas fa-graduation-cap"></i> Academic Information
+      </h3>
+      
+      <!-- Student ID -->
+      <div class="form-group">
+        <label for="studentID" class="form-label">
+          <i class="fas fa-id-card"></i> Student ID
+        </label>
+        <div style="position: relative;">
+          <input
+            type="text"
+            id="studentID"
+            name="studentID"
+            class="form-input"
+            placeholder="Enter your unique student ID"
+            required
+            autocomplete="username"
+            style="padding-left: 2.5rem;"
+            pattern="[A-Za-z0-9]{6,}"
+            title="Student ID should be at least 6 characters long"
+          />
+          <i class="fas fa-id-card" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+        </div>
+        <p id="studentID-error" class="hidden" style="color: var(--accent-red); font-size: 0.875rem; margin-top: 0.25rem;">
+          <i class="fas fa-exclamation-triangle"></i> Student ID already exists or is invalid
+        </p>
+        <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">
+          <i class="fas fa-info-circle"></i> Minimum 6 characters, letters and numbers only
+        </p>
+      </div>
 
-  <p id="emailID-error" class="hidden text-red-400 py-1">ID either incomplete or exists</p>
-</div>
+      <!-- College -->
+      <div class="form-group">
+        <label for="college" class="form-label">
+          <i class="fas fa-university"></i> College/Institution
+        </label>
+        <div style="position: relative;">
+          <input
+            type="text"
+            id="college"
+            name="college"
+            class="form-input"
+            placeholder="Enter your college or institution name"
+            required
+            style="padding-left: 2.5rem;"
+          />
+          <i class="fas fa-university" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+        </div>
+      </div>
+    </div>
 
-  <div class="w-1/2 max-w-xs flex flex-col sm:flex-row mt-4 sm:items-center"></div>
-  <label class="text-xl" for="mobile">Phone</label>
-  <input
-    class="px-2 py-1 bg-transparent border-white border-2 mt-2  rounded "
-    name="mobile"
+    <!-- Account Security Section -->
+    <div style="margin-bottom: 2rem;">
+      <h3 style="color: var(--accent-green); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fas fa-shield-alt"></i> Account Security
+      </h3>
+      
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password" class="form-label">
+          <i class="fas fa-lock"></i> Password
+        </label>
+        <div style="position: relative;">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-input"
+            placeholder="Create a strong password"
+            required
+            autocomplete="new-password"
+            style="padding-left: 2.5rem; padding-right: 2.5rem;"
+            minlength="8"
+          />
+          <i class="fas fa-lock" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+          <button
+            type="button"
+            id="togglePassword"
+            style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem;"
+          >
+            <i class="fas fa-eye" id="eyeIcon"></i>
+          </button>
+        </div>
+        <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">
+          <i class="fas fa-info-circle"></i> Minimum 8 characters required
+        </p>
+      </div>
 
-</div>
+      <!-- Confirm Password -->
+      <div class="form-group">
+        <label for="confirmPassword" class="form-label">
+          <i class="fas fa-lock"></i> Confirm Password
+        </label>
+        <div style="position: relative;">
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            class="form-input"
+            placeholder="Confirm your password"
+            required
+            style="padding-left: 2.5rem;"
+          />
+          <i class="fas fa-lock" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+        </div>
+        <p id="password-error" class="hidden" style="color: var(--accent-red); font-size: 0.875rem; margin-top: 0.25rem;">
+          <i class="fas fa-exclamation-triangle"></i> Passwords do not match
+        </p>
+      </div>
+    </div>
 
-<div class="w-1/2 max-w-xs flex flex-col sm:flex-row mt-4 sm:items-center"></div>
-    <label class="text-xl" for="address">Address</label>
-    <input
-      class="px-2 py-1 bg-transparent border-white border-2 mt-2  rounded "
-      name="address"
+    <!-- Terms and Conditions -->
+    <div style="margin-bottom: 1.5rem;">
+      <label style="display: flex; align-items: flex-start; cursor: pointer;">
+        <input 
+          type="checkbox" 
+          name="terms" 
+          id="terms"
+          required
+          style="margin-right: 0.75rem; margin-top: 0.25rem; accent-color: var(--accent-purple);"
+        />
+        <span style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.5;">
+          I agree to the <a href="#" style="color: var(--accent-purple); text-decoration: none;">Terms of Service</a> 
+          and <a href="#" style="color: var(--accent-purple); text-decoration: none;">Privacy Policy</a>
+        </span>
+      </label>
+    </div>
 
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;" id="submitBtn">
+      <i class="fas fa-user-plus"></i> Create Account
+    </button>
+  </form>
+
+  <!-- Divider -->
+  <div style="display: flex; align-items: center; margin: 2rem 0;">
+    <hr style="flex: 1; border: none; height: 1px; background: var(--border-color);">
+    <span style="margin: 0 1rem; color: var(--text-muted); font-size: 0.875rem;">or</span>
+    <hr style="flex: 1; border: none; height: 1px; background: var(--border-color);">
   </div>
 
-  <div class="w-1/2 max-w-xs flex flex-col sm:flex-row mt-4 sm:items-center"></div>
-    <label class="text-xl" for="college">College</label>
-    <input
-      class="px-2 py-1 bg-transparent border-white border-2 mt-2  rounded "
-      name="college"
-
+  <!-- Sign In Link -->
+  <div style="text-align: center;">
+    <p style="color: var(--text-secondary); margin-bottom: 1rem;">Already have an account?</p>
+    <a href="{% url 'student-login' %}" class="btn btn-outline" style="width: 100%;">
+      <i class="fas fa-sign-in-alt"></i> Sign In Instead
+    </a>
   </div>
 </div>
 
-<div class="w-1/2 max-w-xs flex flex-col sm:flex-row mt-4 sm:items-center"></div>
-  <label class="text-xl" for="password">Password</label>
-  <input
-    class="px-2 py-1 bg-transparent border-white border-2 mt-2  rounded "
-    name="password"
-
-</div>
-
-
-<button class="text-black hover:shadow-md text-xl rounded bg-blue-500 px-4 py-2 mt-8 " type="submit">Submit</button>
-</form>
-
-
-<script>
-const users="{{users | escapejs}}";
-const idField=document.querySelector('#studentID');
-const idError=document.querySelector('#studentID-error');
-idField.addEventListener('input',()=>{
-  idError.classList.add('hidden')
-  if (users.includes(idField.value)){
-    idError.classList.remove('hidden')
-  }
-})
-</script>
 {% endblock content %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const users = "{{ users|escapejs }}";
+  const form = document.getElementById('signupForm');
+  
+  // Form elements
+  const studentIdField = document.getElementById('studentID');
+  const studentIdError = document.getElementById('studentID-error');
+  const emailField = document.getElementById('emailID');
+  const emailError = document.getElementById('emailID-error');
+  const passwordField = document.getElementById('password');
+  const confirmPasswordField = document.getElementById('confirmPassword');
+  const passwordError = document.getElementById('password-error');
+  const togglePassword = document.getElementById('togglePassword');
+  const eyeIcon = document.getElementById('eyeIcon');
+  const submitBtn = document.getElementById('submitBtn');
+
+  // Password visibility toggle
+  if (togglePassword && passwordField && eyeIcon) {
+    togglePassword.addEventListener('click', function() {
+      const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordField.setAttribute('type', type);
+      
+      if (type === 'text') {
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+      } else {
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+      }
+    });
+  }
+
+  // Student ID validation
+  if (studentIdField && studentIdError) {
+    studentIdField.addEventListener('input', function() {
+      studentIdError.classList.add('hidden');
+      const value = this.value.trim();
+      
+      if (value.length < 6) {
+        studentIdError.textContent = 'Student ID must be at least 6 characters long';
+        studentIdError.classList.remove('hidden');
+      } else if (users.includes(value)) {
+        studentIdError.textContent = 'Student ID already exists';
+        studentIdError.classList.remove('hidden');
+      }
+    });
+  }
+
+  // Email validation
+  if (emailField && emailError) {
+    emailField.addEventListener('blur', function() {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (this.value && !emailRegex.test(this.value)) {
+        emailError.classList.remove('hidden');
+      } else {
+        emailError.classList.add('hidden');
+      }
+    });
+  }
+
+  // Password confirmation validation
+  function validatePasswords() {
+    if (confirmPasswordField.value && passwordField.value !== confirmPasswordField.value) {
+      passwordError.classList.remove('hidden');
+      return false;
+    } else {
+      passwordError.classList.add('hidden');
+      return true;
+    }
+  }
+
+  if (confirmPasswordField && passwordError) {
+    confirmPasswordField.addEventListener('input', validatePasswords);
+    passwordField.addEventListener('input', validatePasswords);
+  }
+
+  // Form submission
+  form.addEventListener('submit', function(e) {
+    let isValid = true;
+    
+    // Validate all fields
+    if (!validatePasswords()) {
+      isValid = false;
+    }
+    
+    if (studentIdField.value.trim().length < 6) {
+      studentIdError.classList.remove('hidden');
+      isValid = false;
+    }
+    
+    if (!emailField.value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailField.value)) {
+      emailError.classList.remove('hidden');
+      isValid = false;
+    }
+    
+    if (!isValid) {
+      e.preventDefault();
+      return false;
+    }
+    
+    // Show confirmation dialog
+    const fullName = document.getElementById('firstname').value.trim();
+    const studentId = studentIdField.value.trim();
+    
+    if (!confirm(`🎓 Create account for ${fullName} with Student ID: ${studentId}?\n\nYou'll be redirected to the login page after successful registration.`)) {
+      e.preventDefault();
+      return false;
+    }
+    
+    // Add loading state
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="loading"></i> Creating Account...';
+    submitBtn.disabled = true;
+    
+    // Re-enable after 10 seconds as fallback
+    setTimeout(() => {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+    }, 10000);
+  });
+
+  // Focus first input
+  document.getElementById('firstname').focus();
+
+  // Add success message animation if coming from signup success
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('success') === 'true') {
+    setTimeout(() => {
+      alert('🎉 Account created successfully! Please log in with your new credentials.');
+    }, 500);
+  }
+});
+</script>
+{% endblock %}

@@ -1,68 +1,217 @@
-<nav
-  class="container md:mx-auto max-w-5xl p-2 border-b-2 border-white-500 sm:place-items-center flex flex-col sm:flex-row justify-between"
->
-  <div class="justify-between sm:justify-start w-full flex">
-    <a class="font-bold text-white-500 text-xl sm:text-3xl" href="/"
-      >Library Management</a
-    >
-    <button id="ham" class="w-8 sm:hidden">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M4 6h16M4 12h16M4 18h16"
-        />
-      </svg>
-    </button>
+<nav class="navbar">
+  <div class="nav-container">
+    <!-- Logo -->
+    <a href="/" class="logo">
+      <i class="fas fa-book-open"></i> LibraryMS
+    </a>
+    
+    <!-- Mobile Hamburger -->
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    
+    <!-- Navigation Menu -->
+    <ul class="nav-menu" id="nav-menu">
+      {% if user.is_anonymous %}
+        <li>
+          <a href="/student/login" class="nav-link">
+            <i class="fas fa-sign-in-alt"></i> Login
+          </a>
+        </li>
+        <li>
+          <a href="/student/signup" class="nav-link">
+            <i class="fas fa-user-plus"></i> Register
+          </a>
+        </li>
+        <li>
+          <a href="/admin/" class="nav-link">
+            <i class="fas fa-cog"></i> Admin
+          </a>
+        </li>
+      {% elif user.is_superuser %}
+        <li>
+          <a href="/" class="nav-link">
+            <i class="fas fa-home"></i> Home
+          </a>
+        </li>
+        <li>
+          <a href="/all-issues/" class="nav-link">
+            <i class="fas fa-clipboard-list"></i> 
+            Issue Requests
+            <span class="badge" id="issue-count"></span>
+          </a>
+        </li>
+        <li>
+          <a href="/admin/" class="nav-link">
+            <i class="fas fa-dashboard"></i> Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="/student/logout" class="nav-link btn-danger" style="margin-left: 1rem;">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </li>
+      {% else %}
+        <li>
+          <a href="/" class="nav-link">
+            <i class="fas fa-home"></i> Home
+          </a>
+        </li>
+        <li>
+          <a href="/my-issues/" class="nav-link">
+            <i class="fas fa-book"></i> My Issues
+            <span class="notification-dot" id="my-issues-dot"></span>
+          </a>
+        </li>
+        <li>
+          <a href="/my-fines/" class="nav-link">
+            <i class="fas fa-exclamation-triangle"></i> My Fines
+            <span class="notification-dot warning" id="my-fines-dot"></span>
+          </a>
+        </li>
+        <li>
+          <a href="/student/logout" class="nav-link btn-danger" style="margin-left: 1rem;">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </li>
+      {% endif %}
+    </ul>
   </div>
-
-  <ul
-    id="menu"
-    class="w-full pr-2 lg:pr-4 xl:pr-0 lg:w-2/3 justify-end items-end sm:items-center flex flex-col sm:flex-row space-x-4"
-  >
-    {% if user.is_anonymous %}
-    <li><a class="hover:underline" href="/student/login">Login</a></li>
-    <li><a class="hover:underline" href="/student/signup">Signup</a></li>
-    <li><a class="hover:underline" href="/admin/">Admin Dashboard</a></li>
-    {% elif user.is_superuser %}
-    <!-- <li><a class="hover:underline" href="/addbook/">Add Book</a></li> -->
-    <li><a class="hover:underline" href="/all-issues/"> Issue Requests</a></li>
-    <!-- <li><a class="hover:underline" href="/all-fines/">All Fines</a></li> -->
-    <li><a class="hover:underline" href="/admin/">Admin DashBoard</a></li>
-    <li><a class="hover:underline" href="/student/logout">Logout</a></li>
-    {% else %}
-    <li><a class="hover:underline" href="/my-issues/">My Issues</a></li>
-    <li><a class="hover:underline" href="/my-fines/">My Fines</a></li>
-    <li><a class="hover:underline" href="/student/logout">Logout</a></li>
-    {% endif %}
-  </ul>
 </nav>
 
-<script>
-  const ham = document.querySelector("#ham");
-  const menu = document.querySelector("#menu");
-  ham.addEventListener("click", () => {
-    menu.classList.toggle("hidden");
-  });
+<style>
+/* Navigation specific styles */
+.badge {
+  background: var(--accent-red);
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 50px;
+  margin-left: 0.5rem;
+  min-width: 1.5rem;
+  text-align: center;
+  display: inline-block;
+}
 
-  window.addEventListener("load", () => {
-    if (window.matchMedia("(min-width: 640px)").matches) {
-      menu.classList.remove("hidden");
+.notification-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-red);
+  border-radius: 50%;
+  position: absolute;
+  top: 0.2rem;
+  right: 0.2rem;
+  display: none;
+}
+
+.notification-dot.warning {
+  background: var(--accent-yellow);
+}
+
+.nav-link {
+  position: relative;
+}
+
+/* Mobile Navigation Styles */
+@media (max-width: 768px) {
+  .nav-menu {
+    position: fixed;
+    left: -100%;
+    top: 70px;
+    flex-direction: column;
+    background: var(--secondary-black);
+    width: 100%;
+    text-align: center;
+    transition: 0.3s;
+    box-shadow: var(--shadow-lg);
+    border-top: 1px solid var(--border-color);
+    padding: 2rem 0;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  
+  .nav-menu.active {
+    left: 0;
+  }
+  
+  .nav-menu li {
+    margin: 1rem 0;
+  }
+  
+  .hamburger.active span:nth-child(1) {
+    transform: rotate(-45deg) translate(-5px, 6px);
+  }
+  
+  .hamburger.active span:nth-child(2) {
+    opacity: 0;
+  }
+  
+  .hamburger.active span:nth-child(3) {
+    transform: rotate(45deg) translate(-5px, -6px);
+  }
+}
+
+/* Smooth navbar background on scroll */
+.navbar.scrolled {
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const hamburger = document.getElementById('hamburger');
+  const navMenu = document.getElementById('nav-menu');
+  
+  hamburger.addEventListener('click', function() {
+    hamburger.classList.toggle('active');
+    navMenu.classList.toggle('active');
+  });
+  
+  // Close mobile menu when clicking on a link
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      hamburger.classList.remove('active');
+      navMenu.classList.remove('active');
+    });
+  });
+  
+  // Add scrolled class to navbar on scroll
+  window.addEventListener('scroll', function() {
+    const navbar = document.querySelector('.navbar');
+    if (window.scrollY > 50) {
+      navbar.classList.add('scrolled');
     } else {
-      menu.classList.add("hidden");
+      navbar.classList.remove('scrolled');
     }
   });
-  window.addEventListener("resize", () => {
-    if (window.matchMedia("(min-width: 640px)").matches) {
-      menu.classList.remove("hidden");
-    } else {
-      menu.classList.add("hidden");
+  
+  // Simulate notification counts (you can replace this with real data)
+  {% if user.is_superuser %}
+    // You can fetch real counts via AJAX here
+    const issueCount = Math.floor(Math.random() * 10) + 1;
+    const issueCountElement = document.getElementById('issue-count');
+    if (issueCount > 0 && issueCountElement) {
+      issueCountElement.textContent = issueCount;
+      issueCountElement.style.display = 'inline-block';
     }
-  });
+  {% elif not user.is_anonymous %}
+    // Show notification dots for active issues/fines
+    const hasActiveIssues = Math.random() > 0.5; // Replace with real check
+    const hasActiveFines = Math.random() > 0.7; // Replace with real check
+    
+    if (hasActiveIssues) {
+      const myIssuesDot = document.getElementById('my-issues-dot');
+      if (myIssuesDot) myIssuesDot.style.display = 'block';
+    }
+    
+    if (hasActiveFines) {
+      const myFinesDot = document.getElementById('my-fines-dot');
+      if (myFinesDot) myFinesDot.style.display = 'block';
+    }
+  {% endif %}
+});
 </script>

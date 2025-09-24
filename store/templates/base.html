@@ -1,69 +1,183 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Library Management</title>
-    <link
-      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      button:hover {
-        transform: scale(1.1);
-        transition: 0.2s ease-in-out;
-      }
-      li button:hover {
-        transform: scale(1.3) translateY(-2px);
-        text-decoration: underline;
-
-        transition: 0.5s ease-in-out;
-      }
-      .success {
-        color: rgb(0, 226, 132);
-      }
-      .error {
-        color: rgb(255, 58, 58);
-      }
-    </style>
+    <title>{% block title %}Library Management System{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/modern-style.css' %}" />
+    
+    <!-- Additional head content -->
+    {% block extra_head %}{% endblock %}
   </head>
-  <body class="min-h-screen bg-gray-900 text-white">
-    <!-- Navbar -->
+  
+  <body>
+    <!-- Navigation -->
     {% include 'nav.html' %}
-    <!-- Title of the page -->
-    <header
-      class="flex flex-row justify-between items-end mb-5 md:mx-auto max-w-5xl p-2"
-    >
-      <h1 class="font-bold text-lg sm:text-xl capitalize">
-        {%block heading %}{% endblock heading %}
-      </h1>
+    
+    <!-- User Status Indicator -->
+    <div class="user-status {% if user.is_anonymous %}logged-out{% else %}logged-in{% endif %}">
       {% if user.is_anonymous %}
-      <h2 class="text-red-400 sm:pr-5 xl:pr-3">logged out</h2>
+        <i class="fas fa-user-slash"></i> Not Logged In
       {% else %}
-      <h2 class="text-green-400">logged in as {{user}}</h2>
+        <i class="fas fa-user-check"></i> {{ user.username }}
       {% endif %}
-    </header>
-    <section class="container md:mx-auto max-w-5xl">
-      {% for message in messages %}
-      <h3
-        {%
-        if
-        message.tags
-        %}
-        class="{{ message.tags }} p-2  font-bold tracking-wider text-lg"
-        {%
-        endif
-        %}
-      >
-        {{message}}
-      </h3>
-      {%endfor %}
-    </section>
-    <!-- Content -->
-    <main class="container md:mx-auto max-w-5xl p-2">
-      {% block content %}{% endblock content %}
-    </main>
+    </div>
 
+    <!-- DEBUG: Show authentication state -->
+    <div style="background: var(--accent-red); color: white; padding: 0.5rem; text-align: center; font-size: 0.875rem;">
+      🐛 DEBUG: User={{ user.username }}, Auth={{ user.is_authenticated }}, Session={{ request.session.session_key|slice:":8" }}...
+    </div>
+    
+    <!-- Page Header -->
+    <div class="container">
+      <div class="page-header fade-in">
+        <h1>{% block heading %}Library Management System{% endblock %}</h1>
+        {% if user.is_superuser %}
+          <p style="color: var(--accent-yellow); font-weight: 600;">
+            <i class="fas fa-crown"></i> Administrator Panel
+          </p>
+        {% elif not user.is_anonymous %}
+          <p style="color: var(--text-secondary);">
+            <i class="fas fa-book-reader"></i> Student Portal
+          </p>
+        {% else %}
+          <p style="color: var(--text-secondary);">
+            <i class="fas fa-home"></i> Welcome to Our Library
+          </p>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- Messages -->
+    <div class="container">
+      {% for message in messages %}
+        <div class="message {{ message.tags }} fade-in" id="message-{{ forloop.counter }}">
+          {% if message.tags == 'success' %}
+            <i class="fas fa-check-circle"></i>
+          {% elif message.tags == 'error' %}
+            <i class="fas fa-exclamation-triangle"></i>
+          {% elif message.tags == 'warning' %}
+            <i class="fas fa-exclamation-circle"></i>
+          {% else %}
+            <i class="fas fa-info-circle"></i>
+          {% endif %}
+          {{ message }}
+          <button 
+            onclick="dismissMessage('message-{{ forloop.counter }}')" 
+            style="position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; color: inherit; cursor: pointer; opacity: 0.7; font-size: 1.2rem;"
+            title="Dismiss"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      {% endfor %}
+    </div>
+    
+    <!-- Main Content -->
+    <main class="container">
+      <div class="fade-in">
+        {% block content %}
+        <div class="glass-card text-center" style="padding: 3rem;">
+          <i class="fas fa-book-open" style="font-size: 4rem; color: var(--accent-purple); margin-bottom: 1rem;"></i>
+          <h2>Welcome to the Modern Library Management System</h2>
+          <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 1.1rem;">
+            Your gateway to knowledge and digital library services
+          </p>
+        </div>
+        {% endblock content %}
+      </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer style="margin-top: 4rem; padding: 2rem 0; text-align: center; color: var(--text-muted); border-top: 1px solid var(--border-color);">
+      <div class="container">
+        <p>&copy; 2024 Library Management System. Built with modern web technologies.</p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+          <i class="fas fa-code"></i> Crafted with care for the digital age
+        </p>
+      </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script>
+      // Message dismissal function
+      function dismissMessage(messageId) {
+        const message = document.getElementById(messageId);
+        if (message) {
+          message.style.opacity = '0';
+          message.style.transform = 'translateY(-20px)';
+          setTimeout(() => {
+            message.remove();
+          }, 300);
+        }
+      }
+
+      // Auto-dismiss success messages after 5 seconds
+      document.addEventListener('DOMContentLoaded', function() {
+        const successMessages = document.querySelectorAll('.message.success');
+        successMessages.forEach((message, index) => {
+          setTimeout(() => {
+            if (message.parentNode) {
+              dismissMessage(message.id);
+            }
+          }, 5000 + (index * 500)); // Stagger dismissals
+        });
+
+        // Add loading animation to buttons
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(button => {
+          button.addEventListener('click', function() {
+            if (this.type === 'submit' || this.tagName === 'A') {
+              const originalText = this.innerHTML;
+              this.innerHTML = '<i class="loading"></i> Loading...';
+              this.disabled = true;
+              
+              // Re-enable after 3 seconds (fallback)
+              setTimeout(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+              }, 3000);
+            }
+          });
+        });
+      });
+      
+      // Add smooth scroll behavior
+      document.documentElement.style.scrollBehavior = 'smooth';
+      
+      // Add intersection observer for animations
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('fade-in');
+          }
+        });
+      }, observerOptions);
+      
+      // Observe all cards and major elements
+      document.querySelectorAll('.card, .glass-card, .book-card').forEach(el => {
+        observer.observe(el);
+      });
+    </script>
+    
+    <!-- Additional scripts -->
+    {% block extra_scripts %}{% endblock %}
   </body>
 </html>

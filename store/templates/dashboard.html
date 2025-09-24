@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block heading %}<i class="fas fa-tachometer-alt"></i> My Dashboard{% endblock %}
+{% block content %}
+<div class="grid" style="display:grid; gap:1.5rem; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); margin-bottom:2rem;">
+  <div class="glass-card">
+    <h3 style="margin:0 0 .5rem;">Active Issues</h3>
+    <p style="font-size:2rem; font-weight:700; color:var(--accent-blue);">{{ active_issues_count }}</p>
+  </div>
+  <div class="glass-card">
+    <h3 style="margin:0 0 .5rem;">Fines Due</h3>
+    <p style="font-size:2rem; font-weight:700; color:var(--accent-red);">{{ fines_due }}</p>
+  </div>
+  <div class="glass-card">
+    <h3 style="margin:0 0 .5rem;">Books Available</h3>
+    <p style="font-size:2rem; font-weight:700; color:var(--accent-green);">{{ total_books }}</p>
+  </div>
+</div>
+<div class="glass-card">
+  <h3 style="margin-top:0; display:flex; align-items:center; gap:.5rem;"><i class="fas fa-history"></i> Recent Activity</h3>
+  {% if recent_issues %}
+    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:.75rem;">
+      {% for issue in recent_issues %}
+        <li style="display:flex; justify-content:space-between; align-items:center; padding:.75rem 1rem; background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:10px;">
+          <div style="display:flex; flex-direction:column;">
+            <span style="font-weight:600;">{{ issue.book.name }}</span>
+            <small style="color:var(--text-secondary);">Requested: {{ issue.issue_date|date:'Y-m-d' }}</small>
+          </div>
+          <span style="font-size:.75rem; text-transform:uppercase; letter-spacing:.5px; padding:.35rem .65rem; border-radius:50px; background:linear-gradient(135deg,var(--accent-purple),var(--accent-blue));">{{ issue.status|default:issue.issued|yesno:"Issued,Pending" }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p style="margin:0; color:var(--text-secondary);">No recent activity yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

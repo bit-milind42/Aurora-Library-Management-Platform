@@ -11,22 +11,29 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
+from django.conf import settings as django_settings
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env if present
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+## BASE_DIR already defined above after imports
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY =  'django-insecure-i^q4v#gpc(dbzqadp^cz_jvj1se5y!2&l&nhbj#fo9ev7&e=n&'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'insecure-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',') if h.strip()] or []
 
 
 # Application definition
@@ -41,7 +48,38 @@ INSTALLED_APPS = [
     'store.apps.StoreConfig',
     'student',
     'library',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    # Third-party optional future apps could go here
+    # 'myapp',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+    'SLIDING_TOKEN_LIFETIME': timedelta(days=30),
+    'SLIDING_TOKEN_REFRESH_LIMIT': None,
+    'SLIDING_TOKEN_REFRESH_VIOLATION_CALLBACK': None,
+    'SLIDING_TOKEN_REFRESH_ERRORS': None,
+    'SLIDING_TOKEN_REFRESH_VIOLATION_BAN': timedelta(minutes=0),
+    'SLIDING_TOKEN_REFRESH_BAN_CALLBACK': None,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -77,12 +115,24 @@ WSGI_APPLICATION = 'library.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if os.getenv('DB_ENGINE'):
+    DATABASES = {
+        'default': {
+            'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
+            'NAME': os.getenv('DB_NAME', 'library'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'db'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -121,12 +171,14 @@ USE_TZ = True
 def get_os_info():
     print(os.name)
 
-STATIC_URL = 'static/'
-STATIC_ROOT = '/static/'
-MEDIA_ROOT = os.path.join(BASE_DIR,'media')
-MEDIA_URL = '/images/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'library' / 'static'] if (BASE_DIR / 'library' / 'static').exists() else []
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
 
-get_os_info()
+if DEBUG:
+    get_os_info()
 # STATICFILES_DIRS=[
 #     os.path.join(BASE_DIR,'static')
 # ]
@@ -135,5 +187,18 @@ get_os_info()
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-RAZORPAY_KEY_ID=os.getenv("RAZORPAY_KEY_ID")
-RAZORPAY_KEY_SECRET=os.getenv("RAZORPAY_KEY_SECRET")
+RAZORPAY_KEY_ID=os.getenv("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET=os.getenv("RAZORPAY_KEY_SECRET", "")
+
+# Custom user model (will activate after model refactor)
+AUTH_USER_MODEL = 'store.CustomUser'
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_HSTS_SECONDS = int(os.getenv('DJANGO_SECURE_HSTS_SECONDS', '0' if DEBUG else '31536000'))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG

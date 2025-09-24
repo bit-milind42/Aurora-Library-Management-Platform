@@ -1,29 +1,230 @@
 {% extends 'base.html' %}
 
-{% block heading %} Login {% endblock heading %}
+{% block title %}Login - LibraryMS{% endblock %}
 
+{% block heading %}
+  <i class="fas fa-sign-in-alt"></i> Student Login
+{% endblock heading %}
 
 {% block content %}
-<form class="w-2xl sm:w-1/2 max-w-xs flex flex-col mx-auto " action="/student/login/" method="POST">
-  {% csrf_token %}
-  <div class="w-1/2  max-w-xs flex flex-col sm:flex-row mt-4  sm:items-center"></div>
-    <label class="text-3xl" for="studentID">StudentID <span class="text-sm font-thin">(username for admin users)</span></label>
-    <input
-      class="px-2 py-1 bg-transparent border-white border-2 h-lg mt-4 rounded text-gray-100"
-      name="studentID"
+
+<div class="form-container glass-card">
+  <!-- Welcome Section -->
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+      <i class="fas fa-graduation-cap" style="font-size: 2rem; color: white;"></i>
+    </div>
+    <h2 style="margin-bottom: 0.5rem;">Welcome Back!</h2>
+    <p style="color: var(--text-secondary);">Sign in to access your library account</p>
+  </div>
+
+  <!-- Login Form -->
+  <form action="{% url 'student-login' %}" method="POST" style="width: 100%;">
+    {% csrf_token %}
+    
+    <!-- Student ID Field -->
+    <div class="form-group">
+      <label for="studentID" class="form-label">
+        <i class="fas fa-id-card"></i> Student ID
+      </label>
+      <div style="position: relative;">
+        <input
+          type="text"
+          id="studentID"
+          name="studentID"
+          class="form-input {% if login_error %}error-input shake{% endif %}"
+          placeholder="Enter your student ID"
+          value="{{ last_student_id|default:'' }}"
+          required
+          autocomplete="username"
+          style="padding-left: 2.5rem;"
+        />
+        <i class="fas fa-user" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+      </div>
+      <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">
+        <i class="fas fa-info-circle"></i> Use your username for admin access
+      </p>
+    </div>
+
+    <!-- Password Field -->
+    <div class="form-group">
+      <label for="password" class="form-label">
+        <i class="fas fa-lock"></i> Password
+      </label>
+      <div style="position: relative;">
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-input"
+          placeholder="Enter your password"
+          required
+          autocomplete="current-password"
+          style="padding-left: 2.5rem; padding-right: 2.5rem;"
+        />
+        <i class="fas fa-lock" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+        <button
+          type="button"
+          id="togglePassword"
+          style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem;"
+        >
+          <i class="fas fa-eye" id="eyeIcon"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Remember Me & Forgot Password -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <label style="display: flex; align-items: center; cursor: pointer;">
+        <input 
+          type="checkbox" 
+          name="remember" 
+          style="margin-right: 0.5rem; accent-color: var(--accent-purple);"
+        />
+        <span style="color: var(--text-secondary); font-size: 0.875rem;">Remember me</span>
+      </label>
+      
+      <a 
+        href="#" 
+        style="color: var(--accent-purple); text-decoration: none; font-size: 0.875rem; font-weight: 500;"
+        onclick="alert('Please contact the library administrator to reset your password.')"
+      >
+        Forgot password?
+      </a>
+    </div>
+
+    <!-- Hidden Next Field -->
+    {% if request.GET.next %}
+      <input type="hidden" name="next" value="{{ request.GET.next }}" />
+    {% endif %}
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+      <i class="fas fa-sign-in-alt"></i> Sign In
+    </button>
+  </form>
+
+  <!-- Divider -->
+  <div style="display: flex; align-items: center; margin: 2rem 0;">
+    <hr style="flex: 1; border: none; height: 1px; background: var(--border-color);">
+    <span style="margin: 0 1rem; color: var(--text-muted); font-size: 0.875rem;">or</span>
+    <hr style="flex: 1; border: none; height: 1px; background: var(--border-color);">
+  </div>
+
+  <!-- Sign Up Link -->
+  <div style="text-align: center;">
+    <p style="color: var(--text-secondary); margin-bottom: 1rem;">Don't have an account?</p>
+    <a href="{% url 'student-signup' %}" class="btn btn-outline" style="width: 100%;">
+      <i class="fas fa-user-plus"></i> Create New Account
+    </a>
+  </div>
+
+  <!-- Admin Access -->
+  <div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+    <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">
+      <i class="fas fa-cog"></i> Library Staff?
+    </p>
+    <a 
+      href="/admin/" 
+      style="color: var(--accent-yellow); text-decoration: none; font-weight: 500;"
+    >
+      Access Admin Dashboard
+    </a>
+  </div>
+</div>
+
+<!-- Features Section -->
+<div class="container" style="margin-top: 3rem;">
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+    
+    <div class="glass-card text-center">
+      <i class="fas fa-book-reader" style="font-size: 2.5rem; color: var(--accent-purple); margin-bottom: 1rem;"></i>
+      <h3>Browse Books</h3>
+      <p style="color: var(--text-secondary); margin-top: 0.5rem;">Explore our vast digital library collection</p>
+    </div>
+
+    <div class="glass-card text-center">
+      <i class="fas fa-clipboard-list" style="font-size: 2.5rem; color: var(--accent-blue); margin-bottom: 1rem;"></i>
+      <h3>Track Issues</h3>
+      <p style="color: var(--text-secondary); margin-top: 0.5rem;">Manage your book requests and returns</p>
+    </div>
+
+    <div class="glass-card text-center">
+      <i class="fas fa-bell" style="font-size: 2.5rem; color: var(--accent-green); margin-bottom: 1rem;"></i>
+      <h3>Get Notifications</h3>
+      <p style="color: var(--text-secondary); margin-top: 0.5rem;">Stay updated on due dates and alerts</p>
+    </div>
 
   </div>
-  <div class="w-1/2 max-w-xs flex flex-col sm:flex-row mt-4 sm:items-center"></div>
-    <label class="text-3xl" for="password">Password</label>
-    <input
-      class="px-2 py-1 bg-transparent border-white border-2 mt-4  rounded text-gray-100"
-      name="password"
-
-  </div>
-  {% if request.GET.next %}
-  <input type="hidden" name="next" value="{{request.GET.next}}" />
-  {% endif %}
-  <button class="text-white hover:shadow-md text-xl rounded bg-pink-500 px-4 py-2 mt-8 " type="submit">Submit</button>
-</form>
+</div>
 
 {% endblock content %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Password visibility toggle
+  const togglePassword = document.getElementById('togglePassword');
+  const passwordInput = document.getElementById('password');
+  const eyeIcon = document.getElementById('eyeIcon');
+
+  if (togglePassword && passwordInput && eyeIcon) {
+    togglePassword.addEventListener('click', function() {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      
+      if (type === 'text') {
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+      } else {
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+      }
+    });
+  }
+
+  // Form validation
+  const form = document.querySelector('form');
+  const studentIdInput = document.getElementById('studentID');
+  
+  form.addEventListener('submit', function(e) {
+    const studentId = studentIdInput.value.trim();
+    
+    if (studentId.length < 3) {
+      e.preventDefault();
+      alert('Please enter a valid Student ID (minimum 3 characters)');
+      studentIdInput.focus();
+      return false;
+    }
+    
+    // Add loading state to submit button
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="loading"></i> Signing In...';
+    submitBtn.disabled = true;
+    
+    // Re-enable after 10 seconds as fallback
+    setTimeout(() => {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+    }, 10000);
+  });
+
+  // Focus first input on load
+  studentIdInput.focus();
+
+  // Check if coming from successful signup
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('from') === 'signup') {
+    // Add a subtle highlight to indicate they should login
+    form.style.border = '2px solid var(--accent-green)';
+    form.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.3)';
+    
+    setTimeout(() => {
+      form.style.border = '';
+      form.style.boxShadow = '';
+    }, 3000);
+  }
+});
+</script>
+{% endblock %}
